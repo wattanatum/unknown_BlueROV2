@@ -1,7 +1,7 @@
 # unknown_BlueROV2
 
 <p align="center">
-  <img src="assets/bluerov2_drive.gif" alt="BlueROV2 Drive" width="800"/>
+  <img src="assets/bluerov2_drive.gif" alt="BlueROV2 Drive" width="850"/>
 </p>
 
 BlueROV2 underwater robot simulation project using **ROS 2 Jazzy**, **Gazebo Harmonic**, **SLAM Toolbox**, **Nav2**, and **robot_localization EKF**.
@@ -551,7 +551,7 @@ ros2 topic echo /thruster4/cmd_thrust
 # SLAM Toolbox Mapping
 
 <p align="center">
-  <img src="assets/bluerov2_mapping.gif" alt="BlueROV2 Mapping" width="800"/>
+  <img src="assets/bluerov2_mapping.gif" alt="BlueROV2 Mapping" width="850"/>
 </p>
 
 Use this mode to create a new map.
@@ -669,7 +669,7 @@ source install/setup.bash
 # Nav2 Saved-Map Navigation
 
 <p align="center">
-  <img src="assets/bluerov2_navigation.gif" alt="BlueROV2 Navigation" width="800"/>
+  <img src="assets/bluerov2_navigation.gif" alt="BlueROV2 Navigation" width="850"/>
 </p>
 
 Use this mode after a map has already been created.
