@@ -8,17 +8,16 @@ BlueROV2 underwater robot simulation project using **ROS 2 Jazzy**, **Gazebo Har
 
 This project demonstrates:
 
-* BlueROV2 underwater simulation in Gazebo Harmonic
-* ROS 2 bridge from Gazebo to ROS 2
-* DVL, IMU, depth, odometry, and 2D lidar integration
-* EKF localization using `robot_localization`
-* 2D lidar mapping with SLAM Toolbox
-* Saved-map navigation with Nav2
-* AMCL localization
-* Nav2 obstacle avoidance and recovery behavior
-* `/cmd_vel` to BlueROV2 thruster control
-* Automatic depth control
-* Custom underwater Gazebo world and BlueROV2 model
+- BlueROV2 underwater simulation in Gazebo Harmonic
+- ROS 2 bridge from Gazebo to ROS 2
+- Simulated DVL velocity generated from odometry
+- IMU, depth, odometry, and 2D lidar integration
+- EKF localization using `robot_localization`
+- 2D lidar mapping with SLAM Toolbox
+- Saved-map navigation with Nav2 and AMCL
+- `/cmd_vel` to BlueROV2 thruster control
+- Automatic depth control for vertical thrusters
+- Custom Gazebo underwater world and BlueROV2 model
 
 ---
 
@@ -26,15 +25,15 @@ This project demonstrates:
 
 Tested with:
 
-* Ubuntu 24.04
-* ROS 2 Jazzy
-* Gazebo Harmonic
-* SLAM Toolbox
-* Nav2
-* robot_localization
-* ros_gz_bridge
-* RViz2
-* Python 3
+- Ubuntu 24.04
+- ROS 2 Jazzy
+- Gazebo Harmonic
+- SLAM Toolbox
+- Nav2
+- robot_localization
+- ros_gz_bridge
+- RViz2
+- Python 3
 
 ---
 
@@ -51,49 +50,64 @@ unknown_bluerov2_ws/
 └── src/
     ├── bluerov2_gz/
     │   ├── models/
-    │   │   └── bluerov2/
-    │   └── worlds/
-    │       ├── bluerov2_underwater.world
-    │       ├── bluerov2_heavy_underwater.world
-    │       └── bluerov2_ping.world
+    │   │   ├── axes/
+    │   │   ├── bluerov2/
+    │   │   ├── bluerov2_heavy/
+    │   │   ├── bluerov2_ping/
+    │   │   └── sand_heightmap/
+    │   ├── worlds/
+    │   │   ├── bluerov2_underwater.world
+    │   │   ├── bluerov2_heavy_underwater.world
+    │   │   └── bluerov2_ping.world
+    │   ├── scripts/
+    │   ├── params/
+    │   ├── images/
+    │   ├── package.xml
+    │   └── CMakeLists.txt
+    ├── rviz2/
+    │   ├── bluerov2_mapping.rviz
+    │   └── bluerov2_navigation.rviz
     ├── unknown_bluerov2_bringup/
-    │   ├── launch/
+    │   ├── unknown_bluerov2_bringup/
     │   │   ├── gazebo.launch.py
     │   │   └── bridge.launch.py
     │   ├── package.xml
-    │   └── setup.py
-    ├── unknown_bluerov2_control/
-    │   ├── launch/
-    │   │   ├── depth_control.launch.py
-    │   │   ├── sensor_control_ekf.launch.py
-    │   │   ├── sensor_fusion_inputs.launch.py
-    │   │   └── stuck_recovery.launch.py
-    │   ├── unknown_bluerov2_control/
-    │   │   ├── cmd_vel_thruster_mixer.py
-    │   │   ├── depth_thruster_controller.py
-    │   │   ├── odom_to_depth_pose.py
-    │   │   ├── odom_to_dvl_twist.py
-    │   │   └── bluerov2_stuck_recovery.py
+    │   ├── setup.py
+    │   └── setup.cfg
+    ├── unknown_bluerov2_description/
+    │   ├── unknown_bluerov2_description/
+    │   │   └── __init__.py
     │   ├── package.xml
-    │   └── setup.py
+    │   ├── setup.py
+    │   └── setup.cfg
     └── unknown_bluerov2_nav/
         ├── config/
         │   ├── ekf_dvl_imu_depth.yaml
-        │   ├── nav2_params.yaml
+        │   ├── nav2_saved_map_params.yaml
+        │   ├── nav2_slam_params.yaml
         │   └── slam_toolbox.yaml
         ├── launch/
-        │   ├── ekf_dvl_imu_depth.launch.py
+        │   ├── depth_control.launch.py
+        │   ├── ekf_localization.launch.py
+        │   ├── mapping.launch.py
+        │   ├── nav2_saved_map.launch.py
         │   ├── nav2_slam.launch.py
-        │   ├── slam_ekf.launch.py
         │   ├── static_tf.launch.py
-        │   └── tf_with_odom.launch.py
+        │   ├── tf_with_odom.launch.py
+        │   └── thruster_mixer.launch.py
         ├── maps/
         │   ├── bluerov2_slam_map.yaml
         │   └── bluerov2_slam_map.pgm
         ├── unknown_bluerov2_nav/
-        │   └── odom_tf_publisher.py
+        │   ├── cmd_vel_thruster_mixer.py
+        │   ├── depth_thruster_controller.py
+        │   ├── odom_tf_publisher.py
+        │   ├── odom_to_depth_pose.py
+        │   ├── odom_to_dvl_twist.py
+        │   └── wait_for_nav_ready.py
         ├── package.xml
-        └── setup.py
+        ├── setup.py
+        └── setup.cfg
 ```
 
 ---
@@ -109,8 +123,6 @@ cd ~/unknown_bluerov2_ws
 ---
 
 # Install Project Dependencies
-
-## ROS 2 Jazzy packages
 
 ```bash
 sudo apt update
@@ -135,6 +147,14 @@ sudo apt install -y \
   python3-pip
 ```
 
+The DVL in this project is simulated by the custom node:
+
+```text
+unknown_bluerov2_nav/odom_to_dvl_twist.py
+```
+
+No separate DVL package is required.
+
 ---
 
 # Build ROS 2 Workspace
@@ -156,23 +176,26 @@ source ~/.bashrc
 
 # Run BlueROV2 Gazebo Simulation
 
-Open a terminal:
+Open terminal 1:
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
 ros2 launch unknown_bluerov2_bringup gazebo.launch.py
 ```
 
-This launch starts the Gazebo Harmonic underwater simulation with the BlueROV2 model.
+This launch starts Gazebo Harmonic with:
 
-Expected Gazebo topics include:
+```text
+src/bluerov2_gz/worlds/bluerov2_underwater.world
+```
+
+Expected Gazebo / bridge source topics include:
 
 ```text
 /clock
 /scan
 /model/bluerov2/odometry
 /model/bluerov2/odometry_with_covariance
-/world/bluerov2_underwater/dynamic_pose/info
 /world/bluerov2_underwater/model/bluerov2/link/base_link/sensor/imu_sensor/imu
 ```
 
@@ -180,21 +203,26 @@ Expected Gazebo topics include:
 
 # Run Gazebo to ROS 2 Bridge
 
-Open a new terminal:
+Open terminal 2:
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
 ros2 launch unknown_bluerov2_bringup bridge.launch.py
 ```
 
-This bridge publishes important ROS 2 topics:
+This bridge creates ROS 2 topics:
 
 ```text
 /clock
 /imu
 /scan
 /odom
-/tf
+/thruster1/cmd_thrust
+/thruster2/cmd_thrust
+/thruster3/cmd_thrust
+/thruster4/cmd_thrust
+/thruster5/cmd_thrust
+/thruster6/cmd_thrust
 ```
 
 Check topics:
@@ -209,116 +237,314 @@ Check odometry:
 ros2 topic echo /odom --once
 ```
 
-Check scan:
+Check lidar:
 
 ```bash
 ros2 topic echo /scan --once
 ```
 
----
+Check IMU:
 
-# TF and Sensor Frames
-
-The BlueROV2 project uses these important frames:
-
-```text
-map -> odom -> base_link
-base_link -> imu_link
-base_link -> dvl_link
-base_link -> depth_link
-base_link -> laser_link
+```bash
+ros2 topic echo /imu --once
 ```
 
-Static sensor transforms:
+---
+
+# Static TF
+
+Open terminal 3:
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
 ros2 launch unknown_bluerov2_nav static_tf.launch.py
 ```
 
-If using the combined TF launch:
+This publishes:
+
+```text
+base_link -> imu_link
+base_link -> dvl_link
+base_link -> depth_link
+base_link -> laser_link
+```
+
+Check:
+
+```bash
+ros2 run tf2_ros tf2_echo base_link laser_link
+ros2 run tf2_ros tf2_echo base_link imu_link
+ros2 run tf2_ros tf2_echo base_link dvl_link
+ros2 run tf2_ros tf2_echo base_link depth_link
+```
+
+---
+
+# Optional Odom TF Publisher
+
+If you need `odom -> base_link` from raw `/odom`, run:
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
 ros2 launch unknown_bluerov2_nav tf_with_odom.launch.py
 ```
 
-Check TF:
+This starts the static TFs and:
+
+```text
+unknown_bluerov2_nav/odom_tf_publisher.py
+```
+
+Manual run:
 
 ```bash
-ros2 run tf2_ros tf2_echo odom base_link
-ros2 run tf2_ros tf2_echo base_link laser_link
-ros2 run tf2_ros tf2_echo base_link imu_link
+ros2 run unknown_bluerov2_nav odom_tf_publisher \
+  --ros-args \
+  -p use_sim_time:=true \
+  -p odom_topic:=/odom \
+  -p parent_frame:=odom \
+  -p child_frame:=base_link
+```
+
+Important:
+
+Do not publish `odom -> base_link` from two places at the same time.
+
+If EKF publishes `odom -> base_link`, do not run `odom_tf_publisher`.
+
+Check EKF TF setting:
+
+```bash
+ros2 param get /ekf_filter_node publish_tf
 ```
 
 ---
 
 # EKF Localization
 
-This project uses `robot_localization` to fuse:
-
-* DVL velocity
-* IMU orientation / angular velocity
-* Depth pose
-* Gazebo odometry input
-
-Important topics:
-
-```text
-/dvl/twist
-/depth
-/depth/pose
-/imu
-/odom
-/odometry/filtered
-```
-
-Run EKF:
+Run EKF and sensor conversion nodes:
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
-ros2 launch unknown_bluerov2_nav ekf_dvl_imu_depth.launch.py
+ros2 launch unknown_bluerov2_nav ekf_localization.launch.py
 ```
 
-Check filtered odometry:
+This launch starts:
+
+```text
+odom_to_dvl_twist
+odom_to_depth_pose
+ekf_filter_node
+```
+
+The sensor conversion nodes generate:
+
+```text
+/dvl/twist
+/depth/pose
+```
+
+The EKF output is:
+
+```text
+/odometry/filtered
+```
+
+Check simulated DVL:
+
+```bash
+ros2 topic echo /dvl/twist --once
+```
+
+Check depth pose:
+
+```bash
+ros2 topic echo /depth/pose --once
+```
+
+Check EKF output:
 
 ```bash
 ros2 topic echo /odometry/filtered --once
 ```
 
-Check EKF TF:
+Check TF:
 
 ```bash
 ros2 run tf2_ros tf2_echo odom base_link
 ```
 
-Expected:
+> Note: if `/dvl/twist` or `/depth/pose` does not publish, check the odometry topic used in `src/unknown_bluerov2_nav/launch/ekf_localization.launch.py`. If your bridge only publishes `/odom`, set `input_odom_topic` to `/odom`.
+
+---
+
+# Depth Control
+
+The project includes depth control for the vertical thrusters.
+
+Run depth controller:
+
+```bash
+source ~/unknown_bluerov2_ws/install/setup.bash
+ros2 launch unknown_bluerov2_nav depth_control.launch.py
+```
+
+This launch starts:
 
 ```text
-odom -> base_link
+depth_thruster_controller
+```
+
+The depth controller reads odometry from:
+
+```text
+/odom
+```
+
+and sends thrust commands to:
+
+```text
+/thruster5/cmd_thrust
+/thruster6/cmd_thrust
+```
+
+Default depth behavior is configured in:
+
+```text
+src/unknown_bluerov2_nav/launch/depth_control.launch.py
+```
+
+Important parameters:
+
+```text
+mapping_depth_m: 9.0
+shutdown_depth_m: 2.0
+kp_depth: 20.0
+max_thrust: 150.0
+min_active_thrust: 20.0
+depth_tolerance_m: 0.15
+```
+
+Check odometry used for depth:
+
+```bash
+ros2 topic echo /odom --once
+```
+
+Check vertical thruster output:
+
+```bash
+ros2 topic echo /thruster5/cmd_thrust
+ros2 topic echo /thruster6/cmd_thrust
 ```
 
 ---
 
-# Full SLAM + EKF + Nav2 Launch
+# Thruster Mixer
 
-Use this main launch file for the full system:
+The thruster mixer converts Nav2 `/cmd_vel` commands into BlueROV2 horizontal thruster commands.
+
+Typical flow:
+
+```text
+Nav2 /cmd_vel -> cmd_vel_thruster_mixer -> Gazebo thrusters
+```
+
+Run thruster mixer:
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
-ros2 launch unknown_bluerov2_nav slam_ekf.launch.py
+ros2 launch unknown_bluerov2_nav thruster_mixer.launch.py
 ```
 
-This launch can start:
+This launch starts the node:
 
-* Gazebo bridge
-* Static TF
-* Sensor conversion nodes
-* Depth controller
-* EKF localization
-* SLAM Toolbox
-* Nav2
-* Thruster mixer
+```text
+/cmd_vel_to_thrusters
+```
+
+The mixer subscribes to:
+
+```text
+/cmd_vel
+```
+
+and publishes to:
+
+```text
+/thruster1/cmd_thrust
+/thruster2/cmd_thrust
+/thruster3/cmd_thrust
+/thruster4/cmd_thrust
+```
+
+Important parameters are configured in:
+
+```text
+src/unknown_bluerov2_nav/launch/thruster_mixer.launch.py
+```
+
+Important parameters:
+
+```text
+linear_gain
+yaw_gain
+max_thrust
+force_forward_only
+block_rotate_in_place
+invert_yaw
+yaw_deadband
+max_yaw_when_moving
+yaw_scale_when_moving
+```
+
+Check Nav2 velocity:
+
+```bash
+ros2 topic echo /cmd_vel
+```
+
+Check mixer node:
+
+```bash
+ros2 node list | grep cmd_vel
+```
+
+Check mixer node info:
+
+```bash
+ros2 node info /cmd_vel_to_thrusters
+```
+
+Manual forward test:
+
+```bash
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist \
+"{linear: {x: 0.2}, angular: {z: 0.0}}" -r 10
+```
+
+Manual yaw test:
+
+```bash
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist \
+"{linear: {x: 0.0}, angular: {z: 0.2}}" -r 10
+```
+
+Stop command:
+
+```bash
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist \
+"{linear: {x: 0.0}, angular: {z: 0.0}}" --once
+```
+
+Check horizontal thruster output:
+
+```bash
+ros2 topic echo /thruster1/cmd_thrust
+ros2 topic echo /thruster2/cmd_thrust
+ros2 topic echo /thruster3/cmd_thrust
+ros2 topic echo /thruster4/cmd_thrust
+```
 
 ---
 
@@ -328,45 +554,79 @@ This launch can start:
   <img src="assets/bluerov2_mapping.gif" alt="BlueROV2 Mapping" width="800"/>
 </p>
 
-Use this method when creating a new map.
+Use this mode to create a new map.
 
-Do **not** run saved-map navigation with AMCL at the same time as SLAM Toolbox mapping.
+Do not run saved-map navigation at the same time as SLAM Toolbox mapping.
 
-## Terminal 1: Launch Gazebo
+## Terminal 1: Gazebo
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
 ros2 launch unknown_bluerov2_bringup gazebo.launch.py
 ```
 
-## Terminal 2: Launch Bridge
+## Terminal 2: Bridge
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
 ros2 launch unknown_bluerov2_bringup bridge.launch.py
 ```
 
-## Terminal 3: Launch SLAM + EKF
+## Terminal 3: Static TF
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
-ros2 launch unknown_bluerov2_nav slam_ekf.launch.py
+ros2 launch unknown_bluerov2_nav static_tf.launch.py
 ```
 
-## Terminal 4: Run RViz2
+## Terminal 4: EKF Localization
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
+ros2 launch unknown_bluerov2_nav ekf_localization.launch.py
+```
+
+## Terminal 5: SLAM Toolbox
+
+```bash
+source ~/unknown_bluerov2_ws/install/setup.bash
+ros2 launch unknown_bluerov2_nav mapping.launch.py
+```
+
+## Terminal 6: Nav2 for SLAM
+
+```bash
+source ~/unknown_bluerov2_ws/install/setup.bash
+ros2 launch unknown_bluerov2_nav nav2_slam.launch.py
+```
+
+## Terminal 7: Thruster Mixer
+
+```bash
+source ~/unknown_bluerov2_ws/install/setup.bash
+ros2 launch unknown_bluerov2_nav thruster_mixer.launch.py
+```
+
+## Terminal 8: RViz2
+
+```bash
+source ~/unknown_bluerov2_ws/install/setup.bash
+rviz2 -d ~/unknown_bluerov2_ws/src/rviz2/bluerov2_mapping.rviz
+```
+
+If the RViz config does not load, run:
+
+```bash
 rviz2
 ```
 
-In RViz2, set:
+Then set:
 
 ```text
 Fixed Frame: map
 ```
 
-Useful RViz2 displays:
+Useful displays:
 
 ```text
 /map
@@ -412,36 +672,72 @@ source install/setup.bash
   <img src="assets/bluerov2_navigation.gif" alt="BlueROV2 Navigation" width="800"/>
 </p>
 
-Use this method after the map has already been created.
+Use this mode after a map has already been created.
 
-Do **not** run SLAM Toolbox when using saved-map navigation with AMCL.
+Do not run SLAM Toolbox during saved-map navigation.
 
-## Terminal 1: Launch Gazebo
+## Terminal 1: Gazebo
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
 ros2 launch unknown_bluerov2_bringup gazebo.launch.py
 ```
 
-## Terminal 2: Launch Bridge
+## Terminal 2: Bridge
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
 ros2 launch unknown_bluerov2_bringup bridge.launch.py
 ```
 
-## Terminal 3: Launch Nav2 Saved-Map Navigation
+## Terminal 3: Static TF
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
-ros2 launch unknown_bluerov2_nav nav2_slam.launch.py
+ros2 launch unknown_bluerov2_nav static_tf.launch.py
 ```
 
-## Terminal 4: Run RViz2
+## Terminal 4: EKF Localization
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
-rviz2
+ros2 launch unknown_bluerov2_nav ekf_localization.launch.py
+```
+
+## Terminal 5: Nav2 Saved Map
+
+```bash
+source ~/unknown_bluerov2_ws/install/setup.bash
+ros2 launch unknown_bluerov2_nav nav2_saved_map.launch.py
+```
+
+This launch starts saved-map localization and navigation nodes such as:
+
+```text
+map_server
+amcl
+controller_server
+smoother_server
+planner_server
+behavior_server
+bt_navigator
+wait_for_nav_ready
+lifecycle_manager_localization
+lifecycle_manager_navigation
+```
+
+## Terminal 6: Thruster Mixer
+
+```bash
+source ~/unknown_bluerov2_ws/install/setup.bash
+ros2 launch unknown_bluerov2_nav thruster_mixer.launch.py
+```
+
+## Terminal 7: RViz2
+
+```bash
+source ~/unknown_bluerov2_ws/install/setup.bash
+rviz2 -d ~/unknown_bluerov2_ws/src/rviz2/bluerov2_navigation.rviz
 ```
 
 In RViz2:
@@ -468,87 +764,6 @@ to send a navigation goal.
 
 ---
 
-# Depth Control
-
-The project includes depth control for the vertical thrusters.
-
-Run depth controller:
-
-```bash
-source ~/unknown_bluerov2_ws/install/setup.bash
-ros2 launch unknown_bluerov2_control depth_control.launch.py
-```
-
-Example setpoint topic:
-
-```bash
-ros2 topic pub /depth/setpoint std_msgs/msg/Float64 "{data: 9.0}" --once
-```
-
-Check current depth:
-
-```bash
-ros2 topic echo /depth
-```
-
----
-
-# Thruster Mixer
-
-The thruster mixer converts Nav2 `/cmd_vel` commands into BlueROV2 thruster commands.
-
-Typical flow:
-
-```text
-Nav2 /cmd_vel_nav -> cmd_vel_thruster_mixer -> Gazebo thrusters
-```
-
-Important parameters:
-
-```text
-linear_gain
-yaw_gain
-max_thrust
-force_forward_only
-block_rotate_in_place
-invert_yaw
-```
-
-Check Nav2 velocity:
-
-```bash
-ros2 topic echo /cmd_vel_nav
-```
-
-Check mixer node:
-
-```bash
-ros2 node list | grep mixer
-```
-
-Manual forward test:
-
-```bash
-ros2 topic pub /cmd_vel_nav geometry_msgs/msg/Twist \
-"{linear: {x: 0.2}, angular: {z: 0.0}}" -r 10
-```
-
-Manual yaw test:
-
-```bash
-ros2 topic pub /cmd_vel_nav geometry_msgs/msg/Twist \
-"{linear: {x: 0.0}, angular: {z: 0.2}}" -r 10
-```
-
-Stop command:
-
-```bash
-ros2 topic pub /cmd_vel_nav geometry_msgs/msg/Twist \
-"{linear: {x: 0.0}, angular: {z: 0.0}}" --once
-```
-
----
-
 # Check Nav2 Lifecycle
 
 Check if Nav2 nodes are active:
@@ -568,40 +783,33 @@ Expected:
 active [3]
 ```
 
+During SLAM mode, `/map_server` and `/amcl` may not be running. They are mainly for saved-map navigation.
+
 ---
 
-# Check Nav2 TF Tree
+# Check TF Tree
 
-Nav2 requires:
+Required TF tree for mapping and saved-map navigation:
 
 ```text
 map -> odom -> base_link -> laser_link
 ```
 
-Check `odom -> base_link`:
+Check:
 
 ```bash
 ros2 run tf2_ros tf2_echo odom base_link
-```
-
-Check `map -> odom`:
-
-```bash
 ros2 run tf2_ros tf2_echo map odom
-```
-
-Check `map -> base_link`:
-
-```bash
 ros2 run tf2_ros tf2_echo map base_link
+ros2 run tf2_ros tf2_echo base_link laser_link
 ```
 
 Notes:
 
-* `map -> odom` is published by SLAM Toolbox during mapping.
-* `map -> odom` is published by AMCL during saved-map navigation.
-* `odom -> base_link` is published by EKF or odom TF publisher.
-* `base_link -> laser_link` is published by static TF.
+- During mapping, `map -> odom` is published by SLAM Toolbox.
+- During saved-map navigation, `map -> odom` is published by AMCL.
+- `odom -> base_link` is published by EKF or `odom_tf_publisher`.
+- `base_link -> laser_link` is published by static TF.
 
 ---
 
@@ -613,10 +821,10 @@ Check map:
 ros2 topic echo /map --once
 ```
 
-Check AMCL pose:
+Check scan:
 
 ```bash
-ros2 topic echo /amcl_pose --once
+ros2 topic echo /scan --once
 ```
 
 Check raw odom:
@@ -631,16 +839,28 @@ Check EKF odom:
 ros2 topic echo /odometry/filtered --once
 ```
 
-Check lidar:
+Check simulated DVL:
 
 ```bash
-ros2 topic echo /scan --once
+ros2 topic echo /dvl/twist --once
 ```
 
-Check Nav2 velocity command:
+Check depth pose:
 
 ```bash
-ros2 topic echo /cmd_vel_nav
+ros2 topic echo /depth/pose --once
+```
+
+Check AMCL pose:
+
+```bash
+ros2 topic echo /amcl_pose --once
+```
+
+Check Nav2 velocity:
+
+```bash
+ros2 topic echo /cmd_vel
 ```
 
 Check global plan:
@@ -649,7 +869,7 @@ Check global plan:
 ros2 topic echo /plan --once
 ```
 
-Check TF frames:
+Generate TF frames PDF:
 
 ```bash
 ros2 run tf2_tools view_frames
@@ -657,94 +877,105 @@ ros2 run tf2_tools view_frames
 
 ---
 
-# Manual Static TF Commands
+# Manual Bridge Command
 
-If sensor TFs are missing, publish them manually.
-
-## `base_link -> laser_link`
+Normally use:
 
 ```bash
-ros2 run tf2_ros static_transform_publisher \
-  0.25 0.0 0.0 \
-  0.0 0.0 0.0 \
-  base_link laser_link
+ros2 launch unknown_bluerov2_bringup bridge.launch.py
 ```
 
-## `base_link -> imu_link`
+Manual equivalent:
 
 ```bash
-ros2 run tf2_ros static_transform_publisher \
-  0.0 0.0 0.0 \
-  0.0 0.0 0.0 \
-  base_link imu_link
+ros2 run ros_gz_bridge parameter_bridge \
+  /clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock \
+  /world/bluerov2_underwater/model/bluerov2/link/base_link/sensor/imu_sensor/imu@sensor_msgs/msg/Imu[gz.msgs.IMU \
+  /scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan \
+  /model/bluerov2/odometry@nav_msgs/msg/Odometry[gz.msgs.Odometry \
+  /model/bluerov2/joint/thruster1_joint/cmd_thrust@std_msgs/msg/Float64]gz.msgs.Double \
+  /model/bluerov2/joint/thruster2_joint/cmd_thrust@std_msgs/msg/Float64]gz.msgs.Double \
+  /model/bluerov2/joint/thruster3_joint/cmd_thrust@std_msgs/msg/Float64]gz.msgs.Double \
+  /model/bluerov2/joint/thruster4_joint/cmd_thrust@std_msgs/msg/Float64]gz.msgs.Double \
+  /model/bluerov2/joint/thruster5_joint/cmd_thrust@std_msgs/msg/Float64]gz.msgs.Double \
+  /model/bluerov2/joint/thruster6_joint/cmd_thrust@std_msgs/msg/Float64]gz.msgs.Double
 ```
-
-## `base_link -> dvl_link`
-
-```bash
-ros2 run tf2_ros static_transform_publisher \
-  0.0 0.0 -0.15 \
-  0.0 0.0 0.0 \
-  base_link dvl_link
-```
-
-## `base_link -> depth_link`
-
-```bash
-ros2 run tf2_ros static_transform_publisher \
-  0.0 0.0 -0.1 \
-  0.0 0.0 0.0 \
-  base_link depth_link
-```
-
----
-
-# Manual Odom TF Publisher
-
-If EKF does not publish `odom -> base_link`, use:
-
-```bash
-ros2 run unknown_bluerov2_nav odom_tf_publisher \
-  --ros-args \
-  -p use_sim_time:=true \
-  -p odom_topic:=/odom \
-  -p parent_frame:=odom \
-  -p child_frame:=base_link
-```
-
-Or use the combined launch:
-
-```bash
-ros2 launch unknown_bluerov2_nav tf_with_odom.launch.py
-```
-
-Important:
-
-Do not run two nodes publishing the same `odom -> base_link` TF.
-
-Check EKF TF setting:
-
-```bash
-ros2 param get /ekf_filter_node publish_tf
-```
-
-If EKF publishes TF, do not run `odom_tf_publisher`.
 
 ---
 
 # Troubleshooting
 
-## Problem: `odom -> base_link` TF is missing
+## Problem: `/odom` does not publish
 
-Check odometry:
+Check bridge:
+
+```bash
+ros2 node list | grep bridge
+ros2 topic list | grep odom
+```
+
+Check:
 
 ```bash
 ros2 topic echo /odom --once
 ```
 
+Start bridge again:
+
+```bash
+ros2 launch unknown_bluerov2_bringup bridge.launch.py
+```
+
+---
+
+## Problem: `/dvl/twist` does not publish
+
+The DVL is simulated by:
+
+```text
+odom_to_dvl_twist.py
+```
+
+Run:
+
+```bash
+ros2 launch unknown_bluerov2_nav ekf_localization.launch.py
+```
+
+Then check:
+
+```bash
+ros2 topic echo /dvl/twist --once
+```
+
+If missing, check odometry topics:
+
+```bash
+ros2 topic list | grep odom
+ros2 topic echo /odom --once
+ros2 topic echo /model/bluerov2/odometry --once
+```
+
+If your bridge publishes only `/odom`, edit:
+
+```text
+src/unknown_bluerov2_nav/launch/ekf_localization.launch.py
+```
+
+and set both `input_odom_topic` parameters to:
+
+```text
+/odom
+```
+
+---
+
+## Problem: `odom -> base_link` TF is missing
+
 Check EKF:
 
 ```bash
+ros2 node list | grep ekf
 ros2 topic echo /odometry/filtered --once
 ```
 
@@ -754,39 +985,37 @@ Check TF:
 ros2 run tf2_ros tf2_echo odom base_link
 ```
 
-If missing, run:
+If EKF is not publishing TF, use:
 
 ```bash
 ros2 launch unknown_bluerov2_nav tf_with_odom.launch.py
 ```
 
-Or enable EKF TF publishing in:
-
-```text
-src/unknown_bluerov2_nav/config/ekf_dvl_imu_depth.yaml
-```
+Do not publish the same TF twice.
 
 ---
 
 ## Problem: `map` frame does not exist
 
-During mapping, SLAM Toolbox must publish `map -> odom`.
-
-Check:
+During mapping:
 
 ```bash
 ros2 node list | grep slam
 ros2 run tf2_ros tf2_echo map odom
 ```
 
-During saved-map navigation, AMCL must publish `map -> odom`.
-
-Check:
+During saved-map navigation:
 
 ```bash
 ros2 node list | grep amcl
 ros2 topic echo /amcl_pose --once
 ros2 run tf2_ros tf2_echo map odom
+```
+
+If AMCL has not localized, set initial pose in RViz2 using:
+
+```text
+2D Pose Estimate
 ```
 
 ---
@@ -807,7 +1036,7 @@ ros2 service call /local_costmap/clear_entirely_local_costmap nav2_msgs/srv/Clea
 ros2 service call /global_costmap/clear_entirely_global_costmap nav2_msgs/srv/ClearEntireCostmap "{}"
 ```
 
-Make sure initial pose is correct in RViz2.
+Make sure the initial pose is correct in RViz2.
 
 ---
 
@@ -816,65 +1045,58 @@ Make sure initial pose is correct in RViz2.
 Check Nav2 command:
 
 ```bash
-ros2 topic echo /cmd_vel_nav
+ros2 topic echo /cmd_vel
 ```
 
-If `/cmd_vel_nav` publishes velocity but the robot does not move, check the thruster mixer.
-
-Check mixer:
+If `/cmd_vel` publishes but BlueROV2 does not move, check the thruster mixer:
 
 ```bash
-ros2 node list | grep mixer
-ros2 node info /cmd_vel_thruster_mixer
+ros2 node list | grep cmd_vel
+ros2 node info /cmd_vel_to_thrusters
 ```
 
-Manual command test:
+Manual forward test:
 
 ```bash
-ros2 topic pub /cmd_vel_nav geometry_msgs/msg/Twist \
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist \
 "{linear: {x: 0.2}, angular: {z: 0.0}}" -r 10
 ```
 
-If the robot still does not move, check thruster bridge topics.
+Manual yaw test:
+
+```bash
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist \
+"{linear: {x: 0.0}, angular: {z: 0.2}}" -r 10
+```
+
+If the robot still does not move, check thruster topics:
+
+```bash
+ros2 topic echo /thruster1/cmd_thrust
+ros2 topic echo /thruster2/cmd_thrust
+ros2 topic echo /thruster3/cmd_thrust
+ros2 topic echo /thruster4/cmd_thrust
+```
 
 ---
 
 ## Problem: BlueROV2 moves backward during normal path following
 
-Normal path following should be forward-only.
-
-In `nav2_params.yaml`, use:
+In Nav2 DWB parameters, use:
 
 ```yaml
 FollowPath:
   min_vel_x: 0.0
 ```
 
-Keep the mixer able to reverse only if you want Nav2 recovery backup:
-
-```python
-"force_forward_only": False
-```
-
-This means:
-
-```text
-Normal DWB FollowPath = forward only
-Nav2 BackUp recovery = can move backward when stuck
-```
-
----
-
-## Problem: Path is opposite of BlueROV2 and robot does not align
-
-Use small reverse motion only if needed:
+If you want small reverse only when the path is opposite the robot heading, use:
 
 ```yaml
 FollowPath:
   min_vel_x: -0.025
 ```
 
-Add `PreferForward` critic to discourage reverse during normal driving:
+and add `PreferForward` critic:
 
 ```yaml
 critics: [
@@ -891,7 +1113,7 @@ critics: [
 PreferForward.scale: 5.0
 ```
 
-If the robot moves backward too often, increase:
+If it moves backward too often:
 
 ```yaml
 PreferForward.scale: 8.0
@@ -899,9 +1121,9 @@ PreferForward.scale: 8.0
 
 ---
 
-## Problem: BlueROV2 gets stuck near obstacle
+## Problem: BlueROV2 gets stuck near obstacles
 
-Use moderate costmap inflation for narrow paths:
+For narrow corridors, use smaller costmap radius and inflation:
 
 ```yaml
 local_costmap:
@@ -913,7 +1135,7 @@ local_costmap:
         cost_scaling_factor: 4.0
 ```
 
-Use stronger inflation for safer navigation:
+For safer obstacle distance, use larger values:
 
 ```yaml
 local_costmap:
@@ -925,13 +1147,19 @@ local_costmap:
         cost_scaling_factor: 2.0
 ```
 
-If the map contains a V-shaped trap or narrow corner, edit the map or use a keepout zone.
+If a location is a V-shaped trap, edit the map or add a keepout zone.
 
 ---
 
 ## Problem: AMCL shows too many arrows in RViz2
 
-Reduce particles in `nav2_params.yaml`:
+Reduce AMCL particles in:
+
+```text
+src/unknown_bluerov2_nav/config/nav2_saved_map_params.yaml
+```
+
+Example:
 
 ```yaml
 amcl:
@@ -964,7 +1192,7 @@ local_costmap:
       publish_frequency: 2.0
 ```
 
-Use fewer AMCL particles:
+Reduce AMCL particles:
 
 ```yaml
 amcl:
@@ -977,9 +1205,6 @@ amcl:
 
 ## Author
 
-Kasiphat Uppaphak
-
+Kasiphat Uppaphak  
 GitHub: [wattanatum](https://github.com/wattanatum)
-
-
 
