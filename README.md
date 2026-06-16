@@ -669,7 +669,7 @@ source install/setup.bash
 # Nav2 Saved-Map Navigation
 
 <p align="center">
-  <img src="assets/bluerov2_navigation.gif" alt="BlueROV2 Navigation" width="850"/>
+  <img src="assets/bluerov2_navigation.gif" alt="BlueROV2 Navigation" width="900"/>
 </p>
 
 Use this mode after a map has already been created.
