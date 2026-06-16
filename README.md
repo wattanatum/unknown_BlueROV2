@@ -558,53 +558,53 @@ Use this mode to create a new map.
 
 Do not run saved-map navigation at the same time as SLAM Toolbox mapping.
 
-## Terminal 1: Gazebo
+## Terminal 1: Launch Gazebo
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
 ros2 launch unknown_bluerov2_bringup gazebo.launch.py
 ```
 
-## Terminal 2: Bridge
+## Terminal 2: Launch Bridge
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
 ros2 launch unknown_bluerov2_bringup bridge.launch.py
 ```
 
-## Terminal 3: Static TF
+## Terminal 3: Launch TF + Odom
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
-ros2 launch unknown_bluerov2_nav static_tf.launch.py
+ros2 launch unknown_bluerov2_nav tf_with_odom.launch.py
 ```
 
-## Terminal 4: EKF Localization
+## Terminal 4: Launch Thruster Mixer
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
-ros2 launch unknown_bluerov2_nav ekf_localization.launch.py
+ros2 launch unknown_bluerov2_nav thruster_mixer.launch.py
 ```
 
-## Terminal 5: SLAM Toolbox
+## Terminal 5: Launch Depth Control
+
+```bash
+source ~/unknown_bluerov2_ws/install/setup.bash
+ros2 launch unknown_bluerov2_nav depth_control.launch.py
+```
+
+## Terminal 6: Launch SLAM Toolbox
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
 ros2 launch unknown_bluerov2_nav mapping.launch.py
 ```
 
-## Terminal 6: Nav2 for SLAM
+## Terminal 7: Launch Nav2 for SLAM
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
 ros2 launch unknown_bluerov2_nav nav2_slam.launch.py
-```
-
-## Terminal 7: Thruster Mixer
-
-```bash
-source ~/unknown_bluerov2_ws/install/setup.bash
-ros2 launch unknown_bluerov2_nav thruster_mixer.launch.py
 ```
 
 ## Terminal 8: RViz2
@@ -676,35 +676,42 @@ Use this mode after a map has already been created.
 
 Do not run SLAM Toolbox during saved-map navigation.
 
-## Terminal 1: Gazebo
+## Terminal 1: Launch Gazebo
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
 ros2 launch unknown_bluerov2_bringup gazebo.launch.py
 ```
 
-## Terminal 2: Bridge
+## Terminal 2: Launch Bridge
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
 ros2 launch unknown_bluerov2_bringup bridge.launch.py
 ```
 
-## Terminal 3: Static TF
+## Terminal 3: Launch TF + Odom
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
-ros2 launch unknown_bluerov2_nav static_tf.launch.py
+ros2 launch unknown_bluerov2_nav tf_with_odom.launch.py
 ```
 
-## Terminal 4: EKF Localization
+## Terminal 4: Launch Thruster Mixer
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
-ros2 launch unknown_bluerov2_nav ekf_localization.launch.py
+ros2 launch unknown_bluerov2_nav thruster_mixer.launch.py
 ```
 
-## Terminal 5: Nav2 Saved Map
+## Terminal 5: Launch Depth Control
+
+```bash
+source ~/unknown_bluerov2_ws/install/setup.bash
+ros2 launch unknown_bluerov2_nav depth_control.launch.py
+```
+
+## Terminal 6: Nav2 Saved Map
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
@@ -724,13 +731,6 @@ bt_navigator
 wait_for_nav_ready
 lifecycle_manager_localization
 lifecycle_manager_navigation
-```
-
-## Terminal 6: Thruster Mixer
-
-```bash
-source ~/unknown_bluerov2_ws/install/setup.bash
-ros2 launch unknown_bluerov2_nav thruster_mixer.launch.py
 ```
 
 ## Terminal 7: RViz2
