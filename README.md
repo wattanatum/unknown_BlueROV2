@@ -176,7 +176,7 @@ source ~/.bashrc
 
 # Run BlueROV2 Gazebo Simulation
 
-Open terminal 1:
+## Open terminal 1:
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
@@ -203,7 +203,7 @@ Expected Gazebo / bridge source topics include:
 
 # Run Gazebo to ROS 2 Bridge
 
-Open terminal 2:
+## Open terminal 2:
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
@@ -253,7 +253,7 @@ ros2 topic echo /imu --once
 
 # Static TF
 
-Open terminal 3:
+## Open terminal 3:
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
@@ -607,7 +607,7 @@ source ~/unknown_bluerov2_ws/install/setup.bash
 ros2 launch unknown_bluerov2_nav nav2_slam.launch.py
 ```
 
-## Terminal 8: RViz2
+## Terminal 8: Run RViz2
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
@@ -711,7 +711,7 @@ source ~/unknown_bluerov2_ws/install/setup.bash
 ros2 launch unknown_bluerov2_nav depth_control.launch.py
 ```
 
-## Terminal 6: Nav2 Saved Map
+## Terminal 6: Launch Nav2 Saved Map
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
@@ -733,7 +733,7 @@ lifecycle_manager_localization
 lifecycle_manager_navigation
 ```
 
-## Terminal 7: RViz2
+## Terminal 7: Run RViz2
 
 ```bash
 source ~/unknown_bluerov2_ws/install/setup.bash
