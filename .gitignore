@@ -1,0 +1,41 @@
+# ROS 2 build folders
+build/
+install/
+log/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Colcon / test
+.colcon/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Gazebo / ROS logs
+*.log
+*.bag
+*.db3
+*.mcap
+
+# Large generated map/database files if not needed
+*.posegraph
+*.data
+*.bt
+
+# Temporary files
+*.swp
+*.swo
+*~
+.DS_Store
+
+# VSCode
+.vscode/
+
+# CLion / IDE
+.idea/
+
+BlueRov2_cmd

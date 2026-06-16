@@ -1,0 +1,3 @@
+[submodule "src/bluerov2_gz"]
+	path = src/bluerov2_gz
+	url = https://github.com/OWNER/REPO.git
